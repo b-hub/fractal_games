@@ -1,5 +1,6 @@
 define(function(){
   function Display() {
+    
     this.scale = 1;
     this.origin = {
       x: 0,

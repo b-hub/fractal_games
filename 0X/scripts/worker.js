@@ -1,38 +1,26 @@
-console.log("worker");
+importScripts("../lib/require.js");
 
-var gameoverMapping = [
-  [[1,2],[4,8],[3,6]],
-  [[0,2],[4,7]],
-  [[1,0],[4,6],[5,8]],
-  [[0,6],[4,5]],
-  [[1,7],[3,5],[0,8],[2,6]],
-  [[8,2],[4,3]],
-  [[0,3],[4,2],[7,8]],
-  [[6,8],[1,4]],
-  [[6,7],[5,2],[0,4]],
-];
+var importsLoaded = false;
+var gameover = function(){};
 
-function gameover(path) {
-  if (path.length < 5) return false;
-  var lastPlayer = (path.length-1) % 2;
-  var lastPlayerMoves = path.filter(function(move, i) {
-    return i % 2 === lastPlayer;
-  });
+require(['0X'], function(game) {
+  gameover = game.gameover;
+  importsLoaded = true;
+});
 
-  return gameoverMapping[path[path.length-1]].some(function(ops){
-    return ops.every(function(op){
-      return lastPlayerMoves.indexOf(op) != -1; 
-    });
-  });
-}
-
-onmessage = function(e) {
+onmessage = handleMessage;
+  
+function handleMessage(e) {
   var data = e.data;
-  render(data.path, data.ref, data.display, data.options)
+  if (importsLoaded) {
+    render(data.path, data.ref, data.display, data.options);
+  
+  } else {
+    setTimeout(handleMessage, 0, e);
+  }
 }
 
 function render(path, ref, display, options) {
-  
   var origin = display.origin;
   var scale = display.scale;
   var c = display.canvas;
@@ -43,10 +31,12 @@ function render(path, ref, display, options) {
 
   if (gameover(path)) {
     postMessage({type: 'gameover', pathLength: path.length, ref: ref});
+    return;
   }
 
   if (path.length == 9) {
     postMessage({type: 'draw', pathLength: path.length, ref: ref});
+    return;
   }
 
   var subWidth = ref.width / 3;
