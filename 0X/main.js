@@ -1,6 +1,6 @@
 require(['config'], function() {
-  require(['0X', 'display'], function(game, Display) {
-    main(game, Display);
+  require(['0X', 'display', 'base_fractal'], function(game, Display, BaseRenderer) {
+    main(game, Display, BaseRenderer);
   });
 });
 
@@ -13,8 +13,8 @@ function drawQueued() {
   requestAnimationFrame(drawQueued);
 }
 
-function main(game, Display) {
-  var size = 405;
+function main(game, Display, BaseRenderer) {
+  var size = 810;
   var c = document.createElement('CANVAS');
   c.height = size;
   c.width = size;
@@ -31,13 +31,24 @@ function main(game, Display) {
 
   drawGrid(cUi, 3, 3);
   
-  var ctx = c.getContext('2d');
-  
-  var display = new Display();
-  
   var fCols = fractalCols(9, function(x){
     return "#" + x + x + x;
   });
+  
+  var ctx = c.getContext('2d');
+  
+  var display = new Display();
+  var baseRenderer = new BaseRenderer(ctx, fCols);
+  
+  baseRenderer.draw([], {x: 0, y: 0, width: c.width, height: c.height}, {
+      scale: display.scale, 
+      origin: display.origin, 
+      canvas: {width: c.width, height: c.height}
+  },{
+      minWidth: 0.5
+    });
+  
+  return;
   
   var worker = new Worker("scripts/worker.js");
   
